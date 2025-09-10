@@ -18,8 +18,8 @@ jobs:
     - name: Build DLL
       run: msbuild mafia3-dxgi-refresh.sln /p:Configuration=Release /p:Platform=x64
 
-    - name: Upload DLL
-      uses: actions/upload-artifact@v4
-      with:
-        name: dxgi.dll
-        path: Release/dxgi_wrapper.dll
+- name: Upload DLL
+  uses: actions/upload-artifact@v4
+  with:
+    name: dxgi.dll
+    path: '**/Release/*.dll
