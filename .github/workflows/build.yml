@@ -13,7 +13,7 @@ jobs:
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1
     - name: Build DLL
-      run: msbuild mafia3-dxgi-refresh.sln /p:Configuration=Release /p:Platform=x64
+      run: msbuild mafia3-dxgi-forwarder.sln /p:Configuration=Release /p:Platform=x64
     - name: Upload DLL
       uses: actions/upload-artifact@v4
       with:
