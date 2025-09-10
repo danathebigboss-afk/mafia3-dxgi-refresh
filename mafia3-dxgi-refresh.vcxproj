@@ -8,7 +8,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{11111111-1111-1111-1111-111111111111}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>mafia3_dxgi_refresh</RootNamespace>
+    <RootNamespace>mafia3_dxgi_forwarder</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
