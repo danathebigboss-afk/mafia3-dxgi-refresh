@@ -10,16 +10,20 @@ jobs:
     runs-on: windows-latest
 
     steps:
+    # Step 1: Checkout your repository
     - uses: actions/checkout@v3
 
+    # Step 2: Setup MSBuild
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1
 
+    # Step 3: Build the DLL using the solution file
     - name: Build DLL
       run: msbuild mafia3-dxgi-refresh.sln /p:Configuration=Release /p:Platform=x64
 
-- name: Upload DLL
-  uses: actions/upload-artifact@v4
-  with:
-    name: dxgi.dll
-    path: '**/Release/*.dll
+    # Step 4: Upload the compiled DLL as an artifact
+    - name: Upload DLL
+      uses: actions/upload-artifact@v4
+      with:
+        name: dxgi.dll
+        path: '**/Release/*.dll'
