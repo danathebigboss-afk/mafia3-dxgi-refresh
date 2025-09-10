@@ -1,0 +1,81 @@
+#include <windows.h>
+#include <dxgi.h>
+#include <d3d11.h>
+#include <cstdio>
+
+#pragma comment(lib, "d3d11.lib")
+
+// Global pointers
+HMODULE realDxgi = nullptr;
+
+// Forwarded function pointers
+typedef HRESULT(WINAPI* PFN_CREATEDXGIFACTORY2)(UINT, REFIID, void**);
+PFN_CREATEDXGIFACTORY2 pCreateDXGIFactory2 = nullptr;
+
+// Load real dxgi.dll
+void LoadRealDXGI()
+{
+    if (!realDxgi)
+    {
+        realDxgi = LoadLibrary(L"C:\\Windows\\System32\\dxgi.dll");
+        if (!realDxgi)
+        {
+            MessageBox(nullptr, L"Failed to load real dxgi.dll!", L"Error", MB_OK);
+            ExitProcess(1);
+        }
+
+        pCreateDXGIFactory2 = (PFN_CREATEDXGIFACTORY2)GetProcAddress(realDxgi, "CreateDXGIFactory2");
+    }
+}
+
+// Forward CreateDXGIFactory2
+extern "C" HRESULT WINAPI CreateDXGIFactory2(UINT Flags, REFIID riid, void **ppFactory)
+{
+    LoadRealDXGI();
+    if (!pCreateDXGIFactory2) return E_FAIL;
+    return pCreateDXGIFactory2(Flags, riid, ppFactory);
+}
+
+// Example: Hook IDXGISwapChain::Present to force refresh rate
+// (Simplified version — will force 180Hz on creation)
+
+extern "C" __declspec(dllexport) HRESULT InitDXGI(HWND hwnd)
+{
+    DXGI_SWAP_CHAIN_DESC scd = {};
+    scd.BufferCount = 1;
+    scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    scd.BufferDesc.RefreshRate.Numerator = 180;  // FORCE 180 Hz
+    scd.BufferDesc.RefreshRate.Denominator = 1;
+    scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    scd.OutputWindow = hwnd;
+    scd.SampleDesc.Count = 1;
+    scd.Windowed = TRUE;
+    scd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+
+    IDXGISwapChain* swapChain = nullptr;
+    ID3D11Device* device = nullptr;
+    ID3D11DeviceContext* context = nullptr;
+
+    return D3D11CreateDeviceAndSwapChain(
+        nullptr,
+        D3D_DRIVER_TYPE_HARDWARE,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        D3D11_SDK_VERSION,
+        &scd,
+        &swapChain,
+        &device,
+        nullptr,
+        &context
+    );
+}
+
+// DllMain
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+{
+    if (ul_reason_for_call == DLL_PROCESS_ATTACH)
+        LoadRealDXGI();
+    return TRUE;
+}
